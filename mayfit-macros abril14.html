@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAYFIT Macros — Calculadora Hormonal con IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose: #C4648A;
+  --amethyst: #6B3FA0;
+  --sage: #7A9E87;
+  --cream: #FAF5EE;
+  --cream-dark: #EDE3D4;
+  --white: #FFFFFF;
+  --text: #2A1A0E;
+  --text-mid: #6A4A30;
+  --text-light: #9A7A60;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+
+/* HEADER */
+.header {
+  background:linear-gradient(135deg,var(--amethyst) 0%,#3A1A5C 50%,var(--rose) 100%);
+  padding:28px 24px 24px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.header::before {
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+.header-inner { position:relative;z-index:1; }
+.logo { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:600; color:#fff; letter-spacing:0.05em; }
+.logo span { color:#F0DFB0; font-style:italic; }
+.tagline { color:rgba(255,255,255,0.75); font-size:13px; font-weight:300; margin-top:4px; }
+
+/* MAIN */
+.main { max-width:480px; margin:0 auto; padding:24px 16px 40px; }
+
+/* CARDS */
+.card {
+  background:var(--white);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:16px;
+  box-shadow:0 2px 16px rgba(107,63,160,0.08),0 1px 4px rgba(0,0,0,0.04);
+  border:1px solid rgba(107,63,160,0.08);
+}
+.card-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px; font-weight:600;
+  color:var(--amethyst);
+  margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+}
+
+/* FORM */
+.field { margin-bottom:14px; }
+label { font-size:11px; font-weight:500; color:var(--text-mid); letter-spacing:0.04em; text-transform:uppercase; display:block; margin-bottom:5px; }
+input, select {
+  width:100%; font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text);
+  background:var(--cream); border:1.5px solid var(--cream-dark);
+  border-radius:10px; padding:10px 14px; outline:none;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+input:focus, select:focus { border-color:#C4A0DC; box-shadow:0 0 0 3px rgba(107,63,160,0.08); background:var(--white); }
+select { appearance:none; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B3FA0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:36px;
+}
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* BUTTONS */
+.btn {
+  width:100%; background:linear-gradient(135deg,var(--amethyst),var(--rose));
+  color:#fff; border:none; border-radius:12px; padding:14px 20px;
+  font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500;
+  cursor:pointer; transition:opacity 0.2s, transform 0.15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:hover:not(:disabled) { opacity:0.92; transform:translateY(-1px); }
+.btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+.btn-sm {
+  padding:8px 16px; border-radius:8px; font-size:12px;
+  background:var(--amethyst); color:#fff; border:none;
+  cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500;
+  transition:opacity 0.2s;
+}
+.btn-sm:hover { opacity:0.85; }
+.btn-outline {
+  background:none; border:1.5px solid var(--amethyst); color:var(--amethyst);
+  border-radius:8px; padding:7px 14px; font-size:12px; font-weight:500;
+  cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s;
+}
+.btn-outline:hover { background:var(--amethyst); color:#fff; }
+
+/* MACROS DASHBOARD */
+.macros-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.macro-item { background:var(--cream); border-radius:12px; padding:14px; text-align:center; }
+.macro-value { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; line-height:1; }
+.macro-label { font-size:10px; font-weight:500; color:var(--text-light); text-transform:uppercase; letter-spacing:0.06em; margin-top:3px; }
+.macro-unit { font-size:12px; color:var(--text-light); }
+.cal-item { grid-column:span 2; }
+
+.progress-bar { height:6px; background:var(--cream-dark); border-radius:3px; margin-top:6px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.5s ease; }
+.pf-prot { background:linear-gradient(90deg,var(--amethyst),#9B6FD0); }
+.pf-carb { background:linear-gradient(90deg,var(--rose),#E8A0BA); }
+.pf-fat { background:linear-gradient(90deg,var(--sage),#A8C4B2); }
+.pf-cal { background:linear-gradient(90deg,#B8892A,#E8C06A); }
+
+.consumed-text { font-size:11px; color:var(--text-light); margin-top:3px; }
+
+/* CHAT */
+.chat-box {
+  height:320px; overflow-y:auto; border:1.5px solid var(--cream-dark);
+  border-radius:12px; padding:14px; margin-bottom:12px; background:var(--cream);
+  scroll-behavior:smooth;
+}
+.msg { margin-bottom:12px; animation:fadeIn 0.3s ease; }
+.msg-ai { display:flex; gap:8px; align-items:flex-start; }
+.msg-user { display:flex; gap:8px; align-items:flex-start; flex-direction:row-reverse; }
+.avatar {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+}
+.avatar-ai { background:linear-gradient(135deg,var(--amethyst),var(--rose)); color:#fff; }
+.avatar-user { background:var(--cream-dark); color:var(--text-mid); }
+.bubble {
+  max-width:80%; padding:10px 14px; border-radius:14px;
+  font-size:13px; line-height:1.6;
+}
+.bubble-ai { background:var(--white); border:1px solid var(--cream-dark); color:var(--text); border-bottom-left-radius:4px; }
+.bubble-user { background:linear-gradient(135deg,var(--amethyst),var(--rose)); color:#fff; border-bottom-right-radius:4px; }
+.bubble-user img { max-width:160px; border-radius:8px; display:block; margin-top:6px; }
+
+.chat-input-row { display:flex; gap:8px; align-items:flex-end; }
+.chat-input {
+  flex:1; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text);
+  background:var(--white); border:1.5px solid var(--cream-dark); border-radius:10px;
+  padding:10px 12px; outline:none; resize:none; max-height:100px; min-height:42px;
+  transition:border-color 0.2s;
+}
+.chat-input:focus { border-color:#C4A0DC; }
+.chat-actions { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+
+/* FOOD LOG */
+.food-item {
+  background:var(--cream); border-radius:10px; padding:10px 12px;
+  margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;
+}
+.food-name { font-size:13px; font-weight:500; color:var(--text); }
+.food-macros { font-size:11px; color:var(--text-light); margin-top:2px; }
+.food-del { background:none; border:none; color:#E07070; cursor:pointer; font-size:14px; padding:2px 6px; }
+
+/* TABS */
+.tabs { display:flex; gap:0; margin-bottom:16px; border-radius:12px; overflow:hidden; border:1px solid var(--cream-dark); }
+.tab-btn {
+  flex:1; padding:10px 6px; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+  border:none; cursor:pointer; transition:all 0.2s; color:var(--text-light);
+  background:var(--white);
+}
+.tab-btn.active { background:linear-gradient(135deg,var(--amethyst),var(--rose)); color:#fff; }
+
+/* STATES */
+.loading-dots { display:flex; gap:4px; padding:10px 14px; }
+.dot { width:6px;height:6px;border-radius:50%;animation:bounce 1.4s infinite; }
+.d1{background:var(--amethyst);animation-delay:0s;}
+.d2{background:var(--rose);animation-delay:0.2s;}
+.d3{background:#B8892A;animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:scale(0.8);opacity:0.5}40%{transform:scale(1.2);opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.badge {
+  display:inline-block; font-size:10px; font-weight:500; padding:2px 8px;
+  border-radius:10px; letter-spacing:0.04em;
+}
+.badge-rose { background:#F2D0DC; color:#8B3060; }
+.badge-amethyst { background:#EDE3F8; color:#4A2070; }
+.badge-sage { background:#E0EDE4; color:#3A6048; }
+
+.hidden { display:none !important; }
+.section { display:none; }
+.section.active { display:block; }
+
+/* LANG TOGGLE */
+.lang-btn {
+  position:absolute; top:16px; right:16px;
+  background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3);
+  color:#fff; border-radius:20px; padding:4px 10px; font-size:11px;
+  cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500;
+  transition:background 0.2s; z-index:2;
+}
+.lang-btn:hover { background:rgba(255,255,255,0.3); }
+
+/* PROFILE */
+.profile-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--cream-dark); }
+.profile-label { font-size:13px; color:var(--text-light); }
+.profile-value { font-size:13px; font-weight:500; color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+  <div class="header-inner">
+    <div class="logo">MAY<span>FIT</span> Macros</div>
+    <div class="tagline" id="tagline">Calculadora hormonal inteligente · Mayra Cadengo</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECCIÓN 1: FORMULARIO INICIAL -->
+  <div id="sec-form" class="section active">
+    <div class="card">
+      <div class="card-title">✦ <span id="t-tu-perfil">Tu perfil hormonal</span></div>
+
+      <div class="grid2">
+        <div class="field">
+          <label id="l-edad">Edad</label>
+          <input type="number" id="edad" placeholder="45" min="25" max="75">
+        </div>
+        <div class="field">
+          <label id="l-peso">Peso (kg)</label>
+          <input type="number" id="peso" placeholder="65" min="40" max="150">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="field">
+          <label id="l-estatura">Estatura (cm)</label>
+          <input type="number" id="estatura" placeholder="162" min="140" max="200">
+        </div>
+        <div class="field">
+          <label id="l-actividad">Actividad física</label>
+          <select id="actividad">
+            <option value="1.2" id="o-sed">Sedentaria</option>
+            <option value="1.375" id="o-lig">Ligera (1-3 días)</option>
+            <option value="1.55" id="o-mod" selected>Moderada (3-5 días)</option>
+            <option value="1.725" id="o-act">Activa (6-7 días)</option>
+            <option value="1.9" id="o-muy">Muy activa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label id="l-etapa">Etapa hormonal</label>
+        <select id="etapa">
+          <option value="fertil" id="o-fertil">Vida fértil (20-39 años)</option>
+          <option value="peri-temprana" id="o-peri1">Perimenopausia temprana (40-45 años)</option>
+          <option value="peri-avanzada" id="o-peri2" selected>Perimenopausia avanzada (45-52 años)</option>
+          <option value="menopausia" id="o-meno">Menopausia (52+ años)</option>
+          <option value="post" id="o-post">Postmenopausia</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label id="l-objetivo">Objetivo principal</label>
+        <select id="objetivo">
+          <option value="composicion" id="o-comp" selected>Recomposición corporal</option>
+          <option value="perdida" id="o-perd">Pérdida de grasa</option>
+          <option value="mantenimiento" id="o-mant">Mantenimiento de peso</option>
+          <option value="musculo" id="o-musc">Ganancia muscular</option>
+        </select>
+      </div>
+
+      <button class="btn" onclick="calcularMacros()" id="btn-calcular">
+        ✦ <span id="t-calcular">Calcular mis macros</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: CHAT CON IA (2 preguntas personalizadas) -->
+  <div id="sec-chat-inicial" class="section">
+    <div class="card">
+      <div class="card-title">🌿 <span id="t-personaliza">Personalizando tu plan</span></div>
+      <div class="chat-box" id="chat-inicial-box"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-inicial-input" rows="1"
+          placeholder="Escribe tu respuesta..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarInicial()}"></textarea>
+        <button class="btn-sm" onclick="enviarInicial()" id="btn-enviar-inicial">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: DASHBOARD PRINCIPAL -->
+  <div id="sec-dashboard" class="section">
+
+    <!-- MACROS DEL DÍA -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="card-title" style="margin:0">📊 <span id="t-macros-dia">Mis macros del día</span></div>
+        <button class="btn-outline" onclick="nuevoDia()" id="btn-nuevo-dia">↺ Nuevo día</button>
+      </div>
+
+      <div class="macros-grid" id="macros-grid">
+        <div class="macro-item">
+          <div class="macro-value" style="color:var(--amethyst)" id="disp-prot">0</div>
+          <div class="consumed-text"><span id="disp-prot-cons">0</span> / <span id="meta-prot">0</span>g</div>
+          <div class="progress-bar"><div class="progress-fill pf-prot" id="bar-prot" style="width:0%"></div></div>
+          <div class="macro-label" id="l-proteina">Proteína</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-value" style="color:var(--rose)" id="disp-carb">0</div>
+          <div class="consumed-text"><span id="disp-carb-cons">0</span> / <span id="meta-carb">0</span>g</div>
+          <div class="progress-bar"><div class="progress-fill pf-carb" id="bar-carb" style="width:0%"></div></div>
+          <div class="macro-label" id="l-carbos">Carbohidratos</div>
+        </div>
+        <div class="macro-item">
+          <div class="macro-value" style="color:var(--sage)" id="disp-fat">0</div>
+          <div class="consumed-text"><span id="disp-fat-cons">0</span> / <span id="meta-fat">0</span>g</div>
+          <div class="progress-bar"><div class="progress-fill pf-fat" id="bar-fat" style="width:0%"></div></div>
+          <div class="macro-label" id="l-grasas">Grasas</div>
+        </div>
+        <div class="macro-item cal-item">
+          <div class="macro-value" style="color:#B8892A" id="disp-cal">0</div>
+          <div class="consumed-text"><span id="disp-cal-cons">0</span> / <span id="meta-cal">0</span> kcal</div>
+          <div class="progress-bar"><div class="progress-fill pf-cal" id="bar-cal" style="width:0%"></div></div>
+          <div class="macro-label" id="l-calorias">Calorías</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS: REGISTRAR / CHAT / PERFIL -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-reg" onclick="switchTab('reg')" id="t-tab-reg">+ Registrar</button>
+      <button class="tab-btn" id="tab-chat" onclick="switchTab('chat')">💬 Chat IA</button>
+      <button class="tab-btn" id="tab-perfil" onclick="switchTab('perfil')">👤 Mi perfil</button>
+    </div>
+
+    <!-- TAB: REGISTRAR ALIMENTOS -->
+    <div id="panel-reg" class="card">
+      <div class="card-title">🥗 <span id="t-registrar">Registrar alimento</span></div>
+      <div class="chat-actions">
+        <button class="btn-sm" onclick="switchInput('texto')" id="btn-texto">✏️ Texto</button>
+        <button class="btn-sm" onclick="switchInput('foto')" id="btn-foto">📷 Foto</button>
+      </div>
+
+      <div id="input-texto">
+        <div class="field">
+          <textarea class="chat-input" id="food-text-input" rows="2"
+            placeholder="Ej: 1 taza de avena con leche y plátano..."
+            style="width:100%"></textarea>
+        </div>
+        <button class="btn" onclick="analizarTexto()" id="btn-analizar-texto">
+          🔍 <span id="t-analizar">Analizar con IA</span>
+        </button>
+      </div>
+
+      <div id="input-foto" class="hidden">
+        <input type="file" id="foto-input" accept="image/*" capture="environment" style="display:none" onchange="analizarFoto()">
+        <button class="btn" onclick="document.getElementById('foto-input').click()" id="btn-tomar-foto">
+          📷 <span id="t-tomar-foto">Tomar o subir foto</span>
+        </button>
+        <div id="foto-preview" class="hidden" style="margin-top:12px;text-align:center;">
+          <img id="foto-img" style="max-width:100%;border-radius:10px;max-height:200px;object-fit:cover;">
+        </div>
+      </div>
+
+      <div id="analisis-result" class="hidden" style="margin-top:14px;">
+        <div style="background:var(--cream);border-radius:10px;padding:12px;font-size:13px;line-height:1.6;" id="analisis-text"></div>
+        <button class="btn" style="margin-top:10px;" onclick="confirmarAlimento()" id="btn-confirmar">
+          ✅ <span id="t-agregar">Agregar al registro</span>
+        </button>
+      </div>
+
+      <!-- REGISTRO DEL DÍA -->
+      <div style="margin-top:18px;" id="food-log-section">
+        <div style="font-size:11px;font-weight:500;color:var(--text-mid);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;" id="t-registro-hoy">Registro de hoy</div>
+        <div id="food-list"><div style="text-align:center;color:var(--text-light);font-size:13px;padding:20px 0;" id="t-sin-alimentos">Sin alimentos registrados</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: CHAT IA -->
+    <div id="panel-chat" class="card hidden">
+      <div class="card-title">💬 <span id="t-chat-ia">Chat con tu asesora IA</span></div>
+      <div class="chat-box" id="chat-main-box">
+        <div class="msg msg-ai">
+          <div class="avatar avatar-ai">M</div>
+          <div class="bubble bubble-ai" id="chat-welcome">¡Hola! Soy tu asesora de nutrición hormonal. ¿En qué te puedo ayudar hoy?</div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-main-input" rows="1"
+          placeholder="Pregunta sobre nutrición, síntomas, recetas..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarChat()}"></textarea>
+        <button class="btn-sm" onclick="enviarChat()">→</button>
+      </div>
+    </div>
+
+    <!-- TAB: PERFIL -->
+    <div id="panel-perfil" class="card hidden">
+      <div class="card-title">👤 <span id="t-mi-perfil">Mi perfil</span></div>
+      <div id="perfil-content"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const API_KEY = 'sk-proj-s_OcqWJi1vlvVW_n5U6L71g8h5xNjhQTuEPLJmO0x7qGlSBRF8KV-TpCEYRf-ePjBbDAbPTKnX26T3BlbkFJ8jRMuPIXKpVF4Vh2rLi2a5U_yyQK9WQFvvzFDlyblABuEGbq-Qi-C99B8T6v9UoBNqYPvtFHA';
+const API_URL = 'https://api.anthropic.com/v1/messages';
+
+let lang = 'es';
+let perfil = {};
+let macros = {};
+let consumido = {prot:0, carb:0, fat:0, cal:0};
+let alimentos = [];
+let chatInicialStep = 0;
+let pendienteAlimento = null;
+let chatHistory = [];
+
+// ===================== TRADUCCIONES =====================
+const T = {
+  es: {
+    tagline: 'Calculadora hormonal inteligente · Mayra Cadengo',
+    'tu-perfil': 'Tu perfil hormonal',
+    calcular: 'Calcular mis macros',
+    personaliza: 'Personalizando tu plan',
+    'macros-dia': 'Mis macros del día',
+    'nuevo-dia': '↺ Nuevo día',
+    proteina: 'Proteína', carbos: 'Carbohidratos', grasas: 'Grasas', calorias: 'Calorías',
+    registrar: 'Registrar alimento', analizar: 'Analizar con IA',
+    'tomar-foto': 'Tomar o subir foto', agregar: 'Agregar al registro',
+    'registro-hoy': 'Registro de hoy', 'sin-alimentos': 'Sin alimentos registrados',
+    'chat-ia': 'Chat con tu asesora IA', 'mi-perfil': 'Mi perfil',
+    'chat-welcome': '¡Hola! Soy tu asesora de nutrición hormonal. ¿En qué te puedo ayudar hoy?',
+    'tab-reg': '+ Registrar', langBtn: 'EN',
+    edad: 'Edad', peso: 'Peso (kg)', estatura: 'Estatura (cm)', actividad: 'Actividad física', etapa: 'Etapa hormonal', objetivo: 'Objetivo principal',
+  },
+  en: {
+    tagline: 'Smart hormonal calculator · Mayra Cadengo',
+    'tu-perfil': 'Your hormonal profile',
+    calcular: 'Calculate my macros',
+    personaliza: 'Personalizing your plan',
+    'macros-dia': 'My daily macros',
+    'nuevo-dia': '↺ New day',
+    proteina: 'Protein', carbos: 'Carbohydrates', grasas: 'Fats', calorias: 'Calories',
+    registrar: 'Log food', analizar: 'Analyze with AI',
+    'tomar-foto': 'Take or upload photo', agregar: 'Add to log',
+    'registro-hoy': "Today's log", 'sin-alimentos': 'No foods logged yet',
+    'chat-ia': 'Chat with your AI advisor', 'mi-perfil': 'My profile',
+    'chat-welcome': 'Hello! I\'m your hormonal nutrition advisor. How can I help you today?',
+    'tab-reg': '+ Log', langBtn: 'ES',
+    edad: 'Age', peso: 'Weight (kg)', estatura: 'Height (cm)', actividad: 'Physical activity', etapa: 'Hormonal stage', objetivo: 'Main goal',
+  }
+};
+
+function toggleLang() {
+  lang = lang === 'es' ? 'en' : 'es';
+  applyLang();
+}
+
+function applyLang() {
+  const t = T[lang];
+  const ids = ['tagline','tu-perfil','calcular','personaliza','macros-dia','nuevo-dia',
+    'proteina','carbos','grasas','calorias','registrar','analizar','tomar-foto',
+    'agregar','registro-hoy','sin-alimentos','chat-ia','mi-perfil','chat-welcome','tab-reg',
+    'edad','peso','estatura','actividad','etapa','objetivo','langBtn'];
+  ids.forEach(id => {
+    const el = document.getElementById(id) || document.getElementById('t-'+id) || document.getElementById('l-'+id) || document.getElementById('btn-'+id);
+    if (el && t[id]) el.textContent = t[id];
+  });
+  document.getElementById('langBtn').textContent = t.langBtn;
+}
+
+// ===================== CÁLCULO DE MACROS =====================
+function calcularMacros() {
+  const edad = parseInt(document.getElementById('edad').value);
+  const peso = parseFloat(document.getElementById('peso').value);
+  const estatura = parseFloat(document.getElementById('estatura').value);
+  const actividad = parseFloat(document.getElementById('actividad').value);
+  const etapa = document.getElementById('etapa').value;
+  const objetivo = document.getElementById('objetivo').value;
+
+  if (!edad || !peso || !estatura) {
+    alert(lang === 'es' ? 'Por favor completa todos los campos.' : 'Please fill in all fields.');
+    return;
+  }
+
+  perfil = { edad, peso, estatura, actividad, etapa, objetivo };
+
+  // Mifflin-St Jeor para mujer
+  let tmb = (10 * peso) + (6.25 * estatura) - (5 * edad) - 161;
+  let tdee = tmb * actividad;
+
+  // Ajuste hormonal por etapa
+  const ajustes = {
+    'fertil': 1.0,
+    'peri-temprana': 0.97,
+    'peri-avanzada': 0.95,
+    'menopausia': 0.93,
+    'post': 0.91
+  };
+  tdee *= ajustes[etapa] || 0.95;
+
+  // Ajuste por objetivo
+  let calorias;
+  if (objetivo === 'perdida') calorias = tdee * 0.82;
+  else if (objetivo === 'musculo') calorias = tdee * 1.10;
+  else if (objetivo === 'mantenimiento') calorias = tdee;
+  else calorias = tdee * 0.90; // recomposición
+
+  // Macros hormonalmente ajustados
+  let prot_g, fat_pct, carb_g;
+  if (etapa === 'menopausia' || etapa === 'post') {
+    prot_g = peso * 1.6;
+    fat_pct = 0.30;
+  } else if (etapa === 'peri-avanzada') {
+    prot_g = peso * 1.5;
+    fat_pct = 0.28;
+  } else {
+    prot_g = peso * 1.4;
+    fat_pct = 0.25;
+  }
+
+  const fat_g = (calorias * fat_pct) / 9;
+  const prot_cal = prot_g * 4;
+  const fat_cal = fat_g * 9;
+  carb_g = (calorias - prot_cal - fat_cal) / 4;
+  if (carb_g < 60) carb_g = 60;
+
+  macros = {
+    cal: Math.round(calorias),
+    prot: Math.round(prot_g),
+    carb: Math.round(carb_g),
+    fat: Math.round(fat_g)
+  };
+
+  // Pasar al chat inicial
+  mostrarSeccion('sec-chat-inicial');
+  iniciarChatPersonalizacion();
+}
+
+// ===================== CHAT INICIAL (2 preguntas) =====================
+function iniciarChatPersonalizacion() {
+  chatInicialStep = 0;
+  const box = document.getElementById('chat-inicial-box');
+  box.innerHTML = '';
+
+  const preguntas = {
+    es: [
+      `¡Hola! 🌿 Calculé tus macros base. Antes de mostrártelos, necesito personalizarlos para ti.\n\n¿Cómo es tu sueño actualmente? (calidad, horas, si te despiertas de noche, si te sientes descansada al levantarte)`,
+      `Gracias por compartirlo. ✨\n\n¿Tienes alguna condición de salud, intolerancia alimentaria, o medicamento que deba considerar para tu plan?`
+    ],
+    en: [
+      `Hello! 🌿 I calculated your base macros. Before showing them, I need to personalize them for you.\n\nHow is your sleep currently? (quality, hours, if you wake up at night, if you feel rested when you get up)`,
+      `Thank you for sharing that. ✨\n\nDo you have any health conditions, food intolerances, or medications I should consider for your plan?`
+    ]
+  };
+
+  setTimeout(() => {
+    agregarMsgIA(preguntas[lang][0], 'chat-inicial-box');
+  }, 400);
+}
+
+function enviarInicial() {
+  const input = document.getElementById('chat-inicial-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  agregarMsgUsuario(texto, 'chat-inicial-box');
+  input.value = '';
+
+  const preguntas = {
+    es: [
+      `¡Hola! 🌿 Calculé tus macros base. Antes de mostrártelos, necesito personalizarlos para ti.\n\n¿Cómo es tu sueño actualmente?`,
+      `Gracias por compartirlo. ✨\n\n¿Tienes alguna condición de salud, intolerancia alimentaria, o medicamento que deba considerar?`
+    ],
+    en: [
+      `Hello! 🌿 I calculated your base macros. Before showing them, I need to personalize them for you.\n\nHow is your sleep currently?`,
+      `Thank you for sharing that. ✨\n\nDo you have any health conditions, food intolerances, or medications I should consider?`
+    ]
+  };
+
+  if (chatInicialStep === 0) {
+    perfil.sueno = texto;
+    chatInicialStep = 1;
+    setTimeout(() => agregarMsgIA(preguntas[lang][1], 'chat-inicial-box'), 600);
+  } else {
+    perfil.salud = texto;
+    mostrarLoadingIA('chat-inicial-box');
+    generarResumenFinal();
+  }
+}
+
+async function generarResumenFinal() {
+  const etapaLabels = {
+    'fertil': lang === 'es' ? 'vida fértil' : 'fertile life',
+    'peri-temprana': lang === 'es' ? 'perimenopausia temprana' : 'early perimenopause',
+    'peri-avanzada': lang === 'es' ? 'perimenopausia avanzada' : 'advanced perimenopause',
+    'menopausia': lang === 'es' ? 'menopausia' : 'menopause',
+    'post': lang === 'es' ? 'postmenopausia' : 'postmenopause'
+  };
+  const objLabels = {
+    'composicion': lang === 'es' ? 'recomposición corporal' : 'body recomposition',
+    'perdida': lang === 'es' ? 'pérdida de grasa' : 'fat loss',
+    'mantenimiento': lang === 'es' ? 'mantenimiento' : 'maintenance',
+    'musculo': lang === 'es' ? 'ganancia muscular' : 'muscle gain'
+  };
+
+  const prompt = lang === 'es'
+    ? `Eres Mayra Cadengo, especialista en hormonas femeninas y nutrición. Hablas cálido, empoderador, científico pero accesible.
+
+La usuaria tiene: ${perfil.edad} años, ${perfil.peso} kg, ${perfil.estatura} cm, etapa: ${etapaLabels[perfil.etapa]}, objetivo: ${objLabels[perfil.objetivo]}.
+Sueño: ${perfil.sueno}
+Salud: ${perfil.salud}
+
+Sus macros calculados son:
+- Calorías: ${macros.cal} kcal
+- Proteína: ${macros.prot}g
+- Carbohidratos: ${macros.carb}g
+- Grasas: ${macros.fat}g
+
+Escribe UN mensaje cálido y breve (máximo 4 líneas) que:
+1. Presente los macros de forma positiva y empoderada
+2. Mencione 1-2 ajustes específicos basados en su sueño y salud
+3. Cierre con una frase motivadora sobre su etapa hormonal
+No uses listas ni emojis excesivos. Tono de mentora experta y cercana.`
+    : `You are Mayra Cadengo, a specialist in women's hormones and nutrition. Warm, empowering, scientific but accessible tone.
+
+User: ${perfil.edad} years, ${perfil.peso} kg, ${perfil.estatura} cm, stage: ${etapaLabels[perfil.etapa]}, goal: ${objLabels[perfil.objetivo]}.
+Sleep: ${perfil.sueno}
+Health: ${perfil.salud}
+
+Calculated macros:
+- Calories: ${macros.cal} kcal
+- Protein: ${macros.prot}g
+- Carbohydrates: ${macros.carb}g
+- Fats: ${macros.fat}g
+
+Write ONE warm brief message (max 4 lines) that:
+1. Presents the macros positively and empoweringly
+2. Mentions 1-2 specific adjustments based on sleep and health
+3. Closes with a motivating phrase about her hormonal stage`;
+
+  try {
+    const res = await callAPI(prompt);
+    quitarLoading('chat-inicial-box');
+    agregarMsgIA(res, 'chat-inicial-box');
+    setTimeout(() => {
+      mostrarDashboard();
+    }, 2000);
+  } catch(e) {
+    quitarLoading('chat-inicial-box');
+    agregarMsgIA(lang === 'es'
+      ? `¡Perfecto! Aquí están tus macros personalizados. Ve al dashboard para verlos.`
+      : `Great! Here are your personalized macros. Go to the dashboard to see them.`, 'chat-inicial-box');
+    setTimeout(() => mostrarDashboard(), 1500);
+  }
+}
+
+// ===================== DASHBOARD =====================
+function mostrarDashboard() {
+  consumido = {prot:0, carb:0, fat:0, cal:0};
+  alimentos = [];
+  actualizarDashboard();
+  mostrarPerfil();
+  mostrarSeccion('sec-dashboard');
+}
+
+function actualizarDashboard() {
+  document.getElementById('meta-prot').textContent = macros.prot;
+  document.getElementById('meta-carb').textContent = macros.carb;
+  document.getElementById('meta-fat').textContent = macros.fat;
+  document.getElementById('meta-cal').textContent = macros.cal;
+
+  document.getElementById('disp-prot-cons').textContent = consumido.prot;
+  document.getElementById('disp-carb-cons').textContent = consumido.carb;
+  document.getElementById('disp-fat-cons').textContent = consumido.fat;
+  document.getElementById('disp-cal-cons').textContent = consumido.cal;
+
+  document.getElementById('disp-prot').textContent = Math.max(0, macros.prot - consumido.prot) + 'g';
+  document.getElementById('disp-carb').textContent = Math.max(0, macros.carb - consumido.carb) + 'g';
+  document.getElementById('disp-fat').textContent = Math.max(0, macros.fat - consumido.fat) + 'g';
+  document.getElementById('disp-cal').textContent = Math.max(0, macros.cal - consumido.cal);
+
+  const pct = (c, m) => Math.min(100, Math.round((c/m)*100)) + '%';
+  document.getElementById('bar-prot').style.width = pct(consumido.prot, macros.prot);
+  document.getElementById('bar-carb').style.width = pct(consumido.carb, macros.carb);
+  document.getElementById('bar-fat').style.width = pct(consumido.fat, macros.fat);
+  document.getElementById('bar-cal').style.width = pct(consumido.cal, macros.cal);
+}
+
+function mostrarPerfil() {
+  const etapaLabels = {
+    'fertil': lang==='es'?'Vida fértil':'Fertile life',
+    'peri-temprana': lang==='es'?'Perimenopausia temprana':'Early perimenopause',
+    'peri-avanzada': lang==='es'?'Perimenopausia avanzada':'Advanced perimenopause',
+    'menopausia': 'Menopausia / Menopause',
+    'post': 'Postmenopausia / Postmenopause'
+  };
+  const objLabels = {
+    'composicion': lang==='es'?'Recomposición corporal':'Body recomposition',
+    'perdida': lang==='es'?'Pérdida de grasa':'Fat loss',
+    'mantenimiento': lang==='es'?'Mantenimiento':'Maintenance',
+    'musculo': lang==='es'?'Ganancia muscular':'Muscle gain'
+  };
+
+  document.getElementById('perfil-content').innerHTML = `
+    <div class="profile-row"><span class="profile-label">${lang==='es'?'Edad':'Age'}</span><span class="profile-value">${perfil.edad} ${lang==='es'?'años':'years'}</span></div>
+    <div class="profile-row"><span class="profile-label">${lang==='es'?'Peso':'Weight'}</span><span class="profile-value">${perfil.peso} kg</span></div>
+    <div class="profile-row"><span class="profile-label">${lang==='es'?'Estatura':'Height'}</span><span class="profile-value">${perfil.estatura} cm</span></div>
+    <div class="profile-row"><span class="profile-label">${lang==='es'?'Etapa':'Stage'}</span><span class="profile-value">${etapaLabels[perfil.etapa]}</span></div>
+    <div class="profile-row"><span class="profile-label">${lang==='es'?'Objetivo':'Goal'}</span><span class="profile-value">${objLabels[perfil.objetivo]}</span></div>
+    <div style="margin-top:16px;padding:12px;background:var(--cream);border-radius:10px;">
+      <div style="font-size:10px;font-weight:500;color:var(--text-mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">${lang==='es'?'Macros asignados':'Assigned macros'}</div>
+      <div style="font-size:13px;line-height:1.9;">
+        🟣 ${lang==='es'?'Proteína':'Protein'}: <strong>${macros.prot}g</strong><br>
+        🩷 ${lang==='es'?'Carbohidratos':'Carbs'}: <strong>${macros.carb}g</strong><br>
+        🌿 ${lang==='es'?'Grasas':'Fats'}: <strong>${macros.fat}g</strong><br>
+        🟡 ${lang==='es'?'Calorías':'Calories'}: <strong>${macros.cal} kcal</strong>
+      </div>
+    </div>`;
+}
+
+// ===================== REGISTRAR ALIMENTOS =====================
+function switchInput(tipo) {
+  document.getElementById('input-texto').classList.toggle('hidden', tipo !== 'texto');
+  document.getElementById('input-foto').classList.toggle('hidden', tipo !== 'foto');
+  document.getElementById('analisis-result').classList.add('hidden');
+}
+
+async function analizarTexto() {
+  const texto = document.getElementById('food-text-input').value.trim();
+  if (!texto) return;
+
+  const btn = document.getElementById('btn-analizar-texto');
+  btn.disabled = true;
+
+  const prompt = lang === 'es'
+    ? `Analiza este alimento y da los macros aproximados: "${texto}"
+Responde en este formato exacto (sin markdown, sin asteriscos):
+NOMBRE: [nombre del alimento]
+PROTEÍNA: [número]g
+CARBOHIDRATOS: [número]g
+GRASAS: [número]g
+CALORÍAS: [número] kcal
+NOTA: [comentario breve de 1 línea sobre este alimento para una mujer en perimenopausia]`
+    : `Analyze this food and provide approximate macros: "${texto}"
+Reply in this exact format (no markdown):
+NAME: [food name]
+PROTEIN: [number]g
+CARBOHYDRATES: [number]g
+FATS: [number]g
+CALORIES: [number] kcal
+NOTE: [brief 1-line comment about this food for a perimenopausal woman]`;
+
+  try {
+    const res = await callAPI(prompt, 300);
+    pendienteAlimento = parsearAlimento(res);
+    document.getElementById('analisis-text').textContent = res;
+    document.getElementById('analisis-result').classList.remove('hidden');
+  } catch(e) {
+    alert(lang === 'es' ? 'Error al analizar. Intenta de nuevo.' : 'Error analyzing. Please try again.');
+  }
+  btn.disabled = false;
+}
+
+async function analizarFoto() {
+  const file = document.getElementById('foto-input').files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    const mediaType = file.type;
+
+    document.getElementById('foto-img').src = e.target.result;
+    document.getElementById('foto-preview').classList.remove('hidden');
+
+    const prompt = lang === 'es'
+      ? `Analiza esta imagen de alimento y da los macros aproximados. 
+Responde en este formato exacto:
+NOMBRE: [nombre del alimento]
+PROTEÍNA: [número]g
+CARBOHIDRATOS: [número]g
+GRASAS: [número]g
+CALORÍAS: [número] kcal
+NOTA: [comentario para mujer en perimenopausia]`
+      : `Analyze this food image and provide approximate macros.
+Reply in this exact format:
+NAME: [food name]
+PROTEIN: [number]g
+CARBOHYDRATES: [number]g
+FATS: [number]g
+CALORIES: [number] kcal
+NOTE: [comment for a perimenopausal woman]`;
+
+    try {
+      const res = await callAPIVision(prompt, base64, mediaType);
+      pendienteAlimento = parsearAlimento(res);
+      document.getElementById('analisis-text').textContent = res;
+      document.getElementById('analisis-result').classList.remove('hidden');
+    } catch(e) {
+      alert(lang === 'es' ? 'Error al analizar la foto.' : 'Error analyzing photo.');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function parsearAlimento(texto) {
+  const get = (keys) => {
+    for (const k of keys) {
+      const m = texto.match(new RegExp(k + '[:\\s]+([\\d.]+)', 'i'));
+      if (m) return parseFloat(m[1]);
+    }
+    return 0;
+  };
+  const nombre = texto.match(/(?:NOMBRE|NAME)[:\s]+(.+)/i)?.[1]?.trim() || 'Alimento';
+  return {
+    nombre,
+    prot: get(['PROTEÍNA','PROTEINA','PROTEIN']),
+    carb: get(['CARBOHIDRATOS','CARBOHYDRATES','CARBS']),
+    fat: get(['GRASAS','FATS','FAT']),
+    cal: get(['CALORÍAS','CALORIAS','CALORIES'])
+  };
+}
+
+function confirmarAlimento() {
+  if (!pendienteAlimento) return;
+  alimentos.push(pendienteAlimento);
+  consumido.prot += pendienteAlimento.prot;
+  consumido.carb += pendienteAlimento.carb;
+  consumido.fat += pendienteAlimento.fat;
+  consumido.cal += pendienteAlimento.cal;
+  actualizarDashboard();
+  renderFoodList();
+  document.getElementById('food-text-input').value = '';
+  document.getElementById('analisis-result').classList.add('hidden');
+  document.getElementById('foto-preview').classList.add('hidden');
+  pendienteAlimento = null;
+}
+
+function renderFoodList() {
+  const list = document.getElementById('food-list');
+  if (alimentos.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:var(--text-light);font-size:13px;padding:20px 0;" id="t-sin-alimentos">${T[lang]['sin-alimentos']}</div>`;
+    return;
+  }
+  list.innerHTML = alimentos.map((a,i) => `
+    <div class="food-item">
+      <div>
+        <div class="food-name">${a.nombre}</div>
+        <div class="food-macros">P:${a.prot}g · C:${a.carb}g · G:${a.fat}g · ${a.cal}kcal</div>
+      </div>
+      <button class="food-del" onclick="eliminarAlimento(${i})">✕</button>
+    </div>`).join('');
+}
+
+function eliminarAlimento(i) {
+  const a = alimentos[i];
+  consumido.prot -= a.prot;
+  consumido.carb -= a.carb;
+  consumido.fat -= a.fat;
+  consumido.cal -= a.cal;
+  alimentos.splice(i, 1);
+  actualizarDashboard();
+  renderFoodList();
+}
+
+function nuevoDia() {
+  consumido = {prot:0, carb:0, fat:0, cal:0};
+  alimentos = [];
+  actualizarDashboard();
+  renderFoodList();
+}
+
+// ===================== CHAT PRINCIPAL =====================
+async function enviarChat() {
+  const input = document.getElementById('chat-main-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+  input.value = '';
+
+  agregarMsgUsuario(texto, 'chat-main-box');
+  mostrarLoadingIA('chat-main-box');
+
+  chatHistory.push({role:'user', content:texto});
+
+  const systemPrompt = lang === 'es'
+    ? `Eres Mayra Cadengo, especialista en hormonas femeninas y nutrición. PLENOPAUSIA es tu concepto. Voz cálida, científica, empoderada. Sin hormonas sintéticas. La usuaria tiene ${perfil.edad} años, ${perfil.etapa}, objetivo: ${perfil.objetivo}. Sus macros: ${macros.prot}g proteína, ${macros.carb}g carbos, ${macros.fat}g grasas, ${macros.cal} kcal. Respuestas breves y accionables.`
+    : `You are Mayra Cadengo, specialist in women's hormones and nutrition. PLENOPAUSIA is your concept. Warm, scientific, empowering tone. No synthetic hormones. User: ${perfil.edad} years old, ${perfil.etapa}, goal: ${perfil.objetivo}. Macros: ${macros.prot}g protein, ${macros.carb}g carbs, ${macros.fat}g fats, ${macros.cal} kcal. Brief, actionable responses.`;
+
+  try {
+    const msgs = [{role:'user', content: systemPrompt + '\n\n' + texto}];
+    if (chatHistory.length > 2) {
+      // include recent history
+    }
+    const res = await callAPI(systemPrompt + '\n\nUsuaria: ' + texto);
+    quitarLoading('chat-main-box');
+    agregarMsgIA(res, 'chat-main-box');
+    chatHistory.push({role:'assistant', content:res});
+  } catch(e) {
+    quitarLoading('chat-main-box');
+    agregarMsgIA(lang === 'es' ? 'Error al conectar. Intenta de nuevo.' : 'Connection error. Try again.', 'chat-main-box');
+  }
+}
+
+// ===================== API CALLS =====================
+async function callAPI(prompt, maxTokens = 600) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens,
+      messages: [{role:'user', content: prompt}]
+    })
+  });
+  if (!response.ok) throw new Error('API error ' + response.status);
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+async function callAPIVision(prompt, base64, mediaType) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      messages: [{
+        role:'user',
+        content: [
+          {type:'image', source:{type:'base64', media_type:mediaType, data:base64}},
+          {type:'text', text:prompt}
+        ]
+      }]
+    })
+  });
+  if (!response.ok) throw new Error('API error ' + response.status);
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+// ===================== UI HELPERS =====================
+function mostrarSeccion(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab) {
+  ['reg','chat','perfil'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t).classList.toggle('hidden', t!==tab);
+  });
+}
+
+function agregarMsgIA(texto, boxId) {
+  const box = document.getElementById(boxId);
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai';
+  div.innerHTML = `<div class="avatar avatar-ai">M</div><div class="bubble bubble-ai">${texto.replace(/\n/g,'<br>')}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function agregarMsgUsuario(texto, boxId) {
+  const box = document.getElementById(boxId);
+  const div = document.createElement('div');
+  div.className = 'msg msg-user';
+  div.innerHTML = `<div class="avatar avatar-user">Yo</div><div class="bubble bubble-user">${texto}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function mostrarLoadingIA(boxId) {
+  const box = document.getElementById(boxId);
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai loading-msg';
+  div.innerHTML = `<div class="avatar avatar-ai">M</div><div class="bubble bubble-ai"><div class="loading-dots"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div></div></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function quitarLoading(boxId) {
+  const loadings = document.getElementById(boxId).querySelectorAll('.loading-msg');
+  loadings.forEach(l => l.remove());
+}
+</script>
+</body>
+</html>
